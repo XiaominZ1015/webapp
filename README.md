@@ -32,7 +32,7 @@ To check it worked, use:
 ```
 If it shows the pip binary at env/bin/pip then it worked
 
-###pip
+### pip
 install all the dependencies and local FastAPI in the local environment
 ```
         pip install -e .[dev,doc,test]
