@@ -1,12 +1,18 @@
+from apis.base import api_router
 from fastapi import FastAPI
 
-app = FastAPI()
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+def include_router(app):
+    app.include_router(api_router)
 
-@app.get("/healthz/")
-async def healthz():
-   return {"message": "Hello World"}
+
+
+def start_application():
+    app = FastAPI()
+    include_router(app)
+    return app
+
+
+app = start_application()
+
