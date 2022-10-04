@@ -4,6 +4,7 @@
 A web application using FastAPI, which is a modern, fast, web framework for building APIs with Python.
 
 ###  Dependencies
+require python >=3.7 for dependency with yield
 Install the FastAPI:
 ```
         pip install "fastapi[all]"
