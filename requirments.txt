@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-
-
-#for database
-sqlalchemy
-
-# for Bcrypt
-bcrypt

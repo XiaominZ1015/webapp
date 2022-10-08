@@ -22,3 +22,7 @@ class User(UserBase):
     email: str
     accountCreated: str
     accountupdated: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str

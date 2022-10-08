@@ -1,12 +1,24 @@
+from datetime import timedelta, datetime
+from typing import Union
+
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from jose import JWTError, jwt
+from starlette import status
 
 from database import models, schemas, crud
 from database.db import engine, SessionLocal
-from database.schemas import User
+from database.schemas import User, Token
+
 models.Base.metadata.create_all(bind=engine)
 
 router = APIRouter()
+
+SECRET_KEY = "b999f667097d4aaea7fa07d23b4cd8e97d24ae3fe3e0378c4cf063cc50d64121"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def get_db():
     db = SessionLocal()
@@ -15,9 +27,36 @@ def get_db():
     finally:
         db.close()
 
+def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+
+@router.post("/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = crud.get_authenticated_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
 
 @router.get("/{accountId}", response_model=User)
-def get_user_by_id(accountId: str, db: Session = Depends(get_db)):
+def get_user_by_id(accountId: str, token: str = Depends(oauth2_scheme) ,db: Session = Depends(get_db)):
     result = crud.get_user_by_id(db, id=accountId)
     if not result:
         raise HTTPException(status_code=404, detail="user do not exist")
@@ -27,7 +66,7 @@ def get_user_by_id(accountId: str, db: Session = Depends(get_db)):
     return result_converted
 
 @router.put("/{accountId}", response_model=User)
-def update_user_with_id(accountId: str, user: schemas.UserUpdate, db: Session = Depends(get_db)):
+def update_user_with_id(accountId: str, user: schemas.UserUpdate, token: str = Depends(oauth2_scheme) ,db: Session = Depends(get_db)):
 
     result = crud.update_user(db=db, user=user, accountId=accountId)
     result_converted = User(id=result.id, first_name=result.first_name,
