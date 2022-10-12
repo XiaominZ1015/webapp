@@ -69,12 +69,16 @@ async def verifyToken(accountId: str, token: str = Depends(oauth2_scheme), db: S
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    return
+    return username
 
 
 @router.put("/{accountId}", response_model=User)
-def update_user_with_id(accountId: str, user: schemas.UserUpdate, varify: bool = Depends(verifyToken), db: Session = Depends(get_db)):
-
+def update_user_with_id(accountId: str, user: schemas.UserUpdate, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
+    result = crud.get_user_by_id(db, id=accountId)
+    if not result:
+        raise HTTPException(status_code=404, detail="user do not exist")
+    if result.username != username:
+        raise HTTPException(status_code=401, detail="invalid credentials for this operation")
     result = crud.update_user(db=db, user=user, accountId=accountId)
     result_converted = User(id=result.id, first_name=result.first_name,
             last_name=result.last_name, email=result.username,
@@ -82,10 +86,12 @@ def update_user_with_id(accountId: str, user: schemas.UserUpdate, varify: bool =
     return result_converted
 
 @router.get("/{accountId}", response_model=User)
-async def get_user(accountId: str, varify: bool = Depends(verifyToken), db: Session = Depends(get_db)):
+async def get_user(accountId: str, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
     result = crud.get_user_by_id(db, id=accountId)
     if not result:
         raise HTTPException(status_code=404, detail="user do not exist")
+    if result.username != username:
+        raise HTTPException(status_code=401, detail="invalid credentials for this operation")
     result_converted = User(id=result.id, first_name=result.first_name,
                             last_name=result.last_name, email=result.username,
                             accountCreated=result.account_created, accountupdated=result.account_updated)
