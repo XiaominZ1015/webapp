@@ -21,14 +21,9 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.User).offset(skip).limit(limit).all()
 
 def get_authenticated_user(db: Session, userName: str, password: str):
-    users = db.query(models.User).filter(models.User.username == userName)
-    passwordInBytes = password.encode('utf-8')
-    salt = bcrypt.gensalt()
-    passwordEncryp = bcrypt.hashpw(passwordInBytes, salt)
-    for user in users:
-        if passwordEncryp == user.password:
-            return user
-
+    user = db.query(models.User).filter(models.User.username == userName).first()
+    if bcrypt.checkpw(password.encode('utf-8'), user.password):
+        return user
 
 
 def create_user(db: Session, user: schemas.UserCreate):
