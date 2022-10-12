@@ -9,7 +9,7 @@ from starlette import status
 
 from database import models, schemas, crud
 from database.db import engine, SessionLocal
-from database.schemas import User, Token
+from database.schemas import User, Token, TokenData
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -55,21 +55,38 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/{accountId}", response_model=User)
-def get_user_by_id(accountId: str, token: str = Depends(oauth2_scheme) ,db: Session = Depends(get_db)):
-    result = crud.get_user_by_id(db, id=accountId)
-    if not result:
-        raise HTTPException(status_code=404, detail="user do not exist")
-    result_converted = User(id=result.id, first_name=result.first_name,
-            last_name=result.last_name, email=result.username,
-            accountCreated=result.account_created, accountupdated=result.account_updated)
-    return result_converted
+
+async def verifyToken(accountId: str, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    return
+
 
 @router.put("/{accountId}", response_model=User)
-def update_user_with_id(accountId: str, user: schemas.UserUpdate, token: str = Depends(oauth2_scheme) ,db: Session = Depends(get_db)):
+def update_user_with_id(accountId: str, user: schemas.UserUpdate, varify: bool = Depends(verifyToken), db: Session = Depends(get_db)):
 
     result = crud.update_user(db=db, user=user, accountId=accountId)
     result_converted = User(id=result.id, first_name=result.first_name,
             last_name=result.last_name, email=result.username,
             accountCreated=result.account_created, accountupdated=result.account_updated)
+    return result_converted
+
+@router.get("/{accountId}", response_model=User)
+async def get_user(accountId: str, varify: bool = Depends(verifyToken), db: Session = Depends(get_db)):
+    result = crud.get_user_by_id(db, id=accountId)
+    if not result:
+        raise HTTPException(status_code=404, detail="user do not exist")
+    result_converted = User(id=result.id, first_name=result.first_name,
+                            last_name=result.last_name, email=result.username,
+                            accountCreated=result.account_created, accountupdated=result.account_updated)
     return result_converted
