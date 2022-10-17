@@ -119,7 +119,7 @@ async def get_user(accountId: str, credentials: HTTPBasicCredentials = Depends(s
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Basic"},
         )
-    current_password_bytes = credentials.password.encode("utf8")
+    current_password_bytes = credentials.password.encode('utf-8')
     if not bcrypt.checkpw(current_password_bytes, result.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
