@@ -1,10 +1,12 @@
+import secrets
 from datetime import timedelta, datetime
 from typing import Union
 
+import bcrypt
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, HTTPBasic, HTTPBasicCredentials
 from sqlalchemy.orm import Session
-from jose import JWTError, jwt
+from jose import jwt, JWTError
 from starlette import status
 
 from database import models, schemas, crud
@@ -14,7 +16,7 @@ from database.schemas import User, Token, TokenData
 models.Base.metadata.create_all(bind=engine)
 
 router = APIRouter()
-
+security = HTTPBasic()
 SECRET_KEY = "b999f667097d4aaea7fa07d23b4cd8e97d24ae3fe3e0378c4cf063cc50d64121"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -56,7 +58,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 
 
-async def verifyToken(accountId: str, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def verifyToken(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -73,12 +75,29 @@ async def verifyToken(accountId: str, token: str = Depends(oauth2_scheme), db: S
 
 
 @router.put("/{accountId}", response_model=User)
-def update_user_with_id(accountId: str, user: schemas.UserUpdate, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
+#def update_user_with_id(accountId: str, user: schemas.UserUpdate, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
+def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: HTTPBasicCredentials = Depends(security),
+                            db: Session = Depends(get_db)):
     result = crud.get_user_by_id(db, id=accountId)
     if not result:
         raise HTTPException(status_code=404, detail="user do not exist")
-    if result.username != username:
-        raise HTTPException(status_code=401, detail="invalid credentials for this operation")
+    #if result.username != username:
+        #raise HTTPException(status_code=401, detail="invalid credentials for this operation")
+    # alteration for basic auth
+    if result.username != credentials.username:
+        HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    current_password_bytes = credentials.password.encode("utf8")
+    if not bcrypt.checkpw(current_password_bytes, result.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    #end of basic auth alteration
     result = crud.update_user(db=db, user=user, accountId=accountId)
     result_converted = User(id=result.id, first_name=result.first_name,
             last_name=result.last_name, email=result.username,
@@ -86,12 +105,28 @@ def update_user_with_id(accountId: str, user: schemas.UserUpdate, username: str 
     return result_converted
 
 @router.get("/{accountId}", response_model=User)
-async def get_user(accountId: str, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
+#async def get_user(accountId: str, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
+async def get_user(accountId: str, credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
     result = crud.get_user_by_id(db, id=accountId)
     if not result:
         raise HTTPException(status_code=404, detail="user do not exist")
-    if result.username != username:
-        raise HTTPException(status_code=401, detail="invalid credentials for this operation")
+    #if result.username != username:
+        #raise HTTPException(status_code=401, detail="invalid credentials for this operation")
+    #alteration for basic auth
+    if result.username != credentials.username:
+        HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    current_password_bytes = credentials.password.encode("utf8")
+    if not bcrypt.checkpw(current_password_bytes, result.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    #end of basic auth alteration
     result_converted = User(id=result.id, first_name=result.first_name,
                             last_name=result.last_name, email=result.username,
                             accountCreated=result.account_created, accountupdated=result.account_updated)
