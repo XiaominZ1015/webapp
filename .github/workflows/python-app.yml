@@ -24,7 +24,9 @@ jobs:
         image: postgres
         # Provide the password for postgres
         env:
-          POSTGRES_PASSWORD: zxm123456
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: github_actions
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
@@ -51,7 +53,7 @@ jobs:
       - name: Connect to PostgreSQL
         # Runs a script that creates a PostgreSQL table, populates
         # the table with data, and then retrieves the data
-        run: node client.js
+        run: python client.py
         # Environment variables used by the `client.js` script to create
         # a new PostgreSQL table.
         env:
@@ -60,12 +62,7 @@ jobs:
           # The default PostgreSQL port
           POSTGRES_PORT: 5432
 
-      - name: Lint with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
       - name: Test with pytest
         run: |
           pytest
