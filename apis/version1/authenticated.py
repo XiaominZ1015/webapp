@@ -85,7 +85,7 @@ def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: H
         #raise HTTPException(status_code=401, detail="invalid credentials for this operation")
     # alteration for basic auth
     if result.username != credentials.username:
-        HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Basic"},
@@ -116,7 +116,7 @@ async def get_user(accountId: str, credentials: HTTPBasicCredentials = Depends(s
         #raise HTTPException(status_code=401, detail="invalid credentials for this operation")
     #alteration for basic auth
     if result.username != credentials.username:
-        HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Basic"},
