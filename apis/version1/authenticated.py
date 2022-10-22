@@ -90,8 +90,10 @@ def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: H
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Basic"},
         )
-    current_password_bytes = credentials.password.encode("utf8")
-    if not bcrypt.checkpw(current_password_bytes, result.password):
+    current_password_bytes = bytes(credentials.password, "utf8")
+    password_bytes = bytes(result.password,"utf8")
+    #password_temp = b'$2b$12$TEGPvzrARipeNtouRf2Usu6mqwRySWX9dme89Dw3YkcbwHKuOjmpu'
+    if not bcrypt.checkpw(current_password_bytes, password_bytes):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -119,8 +121,10 @@ async def get_user(accountId: str, credentials: HTTPBasicCredentials = Depends(s
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Basic"},
         )
-    current_password_bytes = credentials.password.encode('utf-8')
-    if not bcrypt.checkpw(current_password_bytes, result.password):
+    current_password_bytes = bytes(credentials.password, "utf8")
+    password_bytes = bytes(result.password,"utf8")
+    # password_temp = b'$2b$12$TEGPvzrARipeNtouRf2Usu6mqwRySWX9dme89Dw3YkcbwHKuOjmpu'
+    if not bcrypt.checkpw(current_password_bytes, password_bytes):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
