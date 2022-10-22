@@ -11,7 +11,7 @@ jobs:
       - name: Packer build
         uses: ExitoLab/packer_build_action_aws@v0.2.10
         with:
-          templateFile: 'ami.hcl'
+          templateFile: 'ami.pkr.hcl'
           #workingDir: 'ami'
           #varFile: 'variables.json'
         env:
