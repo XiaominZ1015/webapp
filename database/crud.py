@@ -30,9 +30,10 @@ def create_user(db: Session, user: schemas.UserCreate):
     passwordInBytes = user.password.encode('utf-8')
     salt = bcrypt.gensalt()
     password = bcrypt.hashpw(passwordInBytes, salt)
+    password_str = password.decode('utf-8')
     db_user = models.User(
         first_name=user.first_name, last_name=user.last_name,
-        username=user.email, password=password,
+        username=user.email, password=password_str,
         account_created=datetime.now(), account_updated=datetime.now(),
         )
     db.add(db_user)
