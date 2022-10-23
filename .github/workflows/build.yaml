@@ -59,3 +59,13 @@ jobs:
           name: api
           path: api.zip
           
+      # Step 10
+      - name: install packer
+        run: sudo apt-get install packer
+        
+      # Step 11
+      - name: build packer and deploy to AWS
+        run: |
+          packer init ami.pkr.hcl
+          packer build ami.pkr.hcl
+          
