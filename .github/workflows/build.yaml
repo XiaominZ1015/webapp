@@ -69,7 +69,7 @@ jobs:
         with:
           command: validate
           arguments: -syntax-only
-          target: packer.pkr.hcl
+          target: ami.pkr.hcl
       
       # build artifact
       - name: build packer 
