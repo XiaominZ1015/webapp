@@ -1,4 +1,3 @@
-import secrets
 from datetime import timedelta, datetime
 from typing import Union
 
@@ -9,9 +8,9 @@ from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from starlette import status
 
-from database import models, schemas, crud
-from database.db import engine, SessionLocal
-from database.schemas import User, Token, TokenData
+from app.database import models, crud, schemas
+from app.database.db import engine, SessionLocal
+from app.database.schemas import User, Token
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -77,7 +76,7 @@ async def verifyToken(token: str = Depends(oauth2_scheme)):
 @router.put("/{accountId}", response_model=User)
 #def update_user_with_id(accountId: str, user: schemas.UserUpdate, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
 def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: HTTPBasicCredentials = Depends(security),
-                            db: Session = Depends(get_db)):
+                        db: Session = Depends(get_db)):
     result = crud.get_user_by_id(db, id=accountId)
     if not result:
         raise HTTPException(status_code=404, detail="user do not exist")
@@ -87,7 +86,7 @@ def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: H
     if result.username != credentials.username:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="not allowed",
             headers={"WWW-Authenticate": "Basic"},
         )
     current_password_bytes = bytes(credentials.password, "utf8")
@@ -118,7 +117,7 @@ async def get_user(accountId: str, credentials: HTTPBasicCredentials = Depends(s
     if result.username != credentials.username:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="not allowed",
             headers={"WWW-Authenticate": "Basic"},
         )
     current_password_bytes = bytes(credentials.password, "utf8")
