@@ -74,6 +74,7 @@ jobs:
       # build artifact
       - name: build packer 
         run: |
+          packer init ami.pkr.hcl
           packer build ami.pkr.hcl
         env:
           PACKER_LOG: 1
