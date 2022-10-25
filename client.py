@@ -1,5 +1,5 @@
 import psycopg2
-
+# to connect DB
 con = psycopg2.connect(
             host="localhost",
             database="users_db",
