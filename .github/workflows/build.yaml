@@ -62,10 +62,18 @@ jobs:
       # Step 10
       - name: install packer
         run: sudo apt-get install packer
-        
-      # Step 11
-      - name: build packer and deploy to AWS
+      
+      # validate templates
+      - name: Validate Template
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: validate
+          arguments: -syntax-only
+          target: packer.pkr.hcl
+      
+      # build artifact
+      - name: build packer 
         run: |
-          packer init ami.pkr.hcl
           packer build ami.pkr.hcl
-          
+        env:
+          PACKER_LOG: 1
