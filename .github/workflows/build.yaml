@@ -36,13 +36,13 @@ jobs:
       
       # build artifact
       - name: Build Artifact
-          uses: hashicorp/packer-github-actions@master
-          with:
-            command: build
-            arguments: "-on-error=abort"
-            target: ami.pkr.hcl
-          env:
-            PACKER_LOG: 1
-            ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
-            SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: build
+          arguments: "-on-error=abort"
+          target: ami.pkr.hcl
+        env:
+          PACKER_LOG: 1
+          ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
