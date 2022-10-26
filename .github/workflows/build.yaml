@@ -26,11 +26,6 @@ jobs:
 
       - name: install packer
         run: sudo apt-get install packer
-      
-      - name: Fix Template
-        uses: hashicorp/packer-github-actions@master
-        with:
-          command: fix
           
       - name: Validate Template
         uses: hashicorp/packer-github-actions@master
