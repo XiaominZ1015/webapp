@@ -38,9 +38,10 @@ jobs:
       - name: build packer 
         run: |
           packer init ami.pkr.hcl
+          echo ${{ secrets.ACCESS_KEY }}
           packer build ami.pkr.hcl
         env:
           PACKER_LOG: 1
-          ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          access_key: ${{ secrets.ACCESS_KEY }}
+          secret_key: ${{ secrets.SECRET_KEY }}
 
