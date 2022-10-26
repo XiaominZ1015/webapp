@@ -101,7 +101,9 @@ build {
       "pip install mysqlclient",
       "pip install gunicorn",
       "sudo python3 initDB.py",
-      
+      "sudo cp webapp.service /etc/systemd/system/",
+      "sudo systemctl start webapp",
+      "sudo systemctl enable webapp",
     ]
   }
 }
