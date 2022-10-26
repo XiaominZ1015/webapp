@@ -100,6 +100,8 @@ build {
       "pip install bcrypt",
       "pip install mysqlclient",
       "pip install gunicorn",
+      "pip install social-auth-core",
+      "pip install python-jose",
       "sudo python3 initDB.py",
       "sudo cp webapp.service /etc/systemd/system/",
       "sudo systemctl start webapp",
