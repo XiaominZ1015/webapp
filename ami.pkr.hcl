@@ -77,7 +77,6 @@ build {
       "sudo apt-get install nginx -y",
       "sudo apt-get install unzip",
       "sudo apt-get clean",
-      "unzip api.zip",
     ]
   }
 }
