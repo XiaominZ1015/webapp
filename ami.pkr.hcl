@@ -1,4 +1,4 @@
-variable "aws_region" {
+ "aws_region" {
   type    = string
   default = "us-east-1"
 }
@@ -29,7 +29,7 @@ variable "secret_key" {
 }
 
 # https://www.packer.io/plugins/builders/amazon/ebs
-source "amazon-bs" "my-ami" {
+source "amazon-ebs" "my-ami" {
   region          = "${var.aws_region}"
   ami_name        = "csye6225_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   ami_description = "AMI for CSYE 6225"
