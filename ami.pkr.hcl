@@ -20,12 +20,12 @@ variable "subnet_id" {
 
 variable "access_key" {
   type    = string
-  default = "AKIATGZHMLGE4GB7ACMO"
+  default = ""
 }
 
 variable "secret_key" {
   type    = string
-  default = "C9MA16LunY60CHlCkoLkPERikutw4L5zJCzQtjtG"
+  default = ""
 }
 
 # https://www.packer.io/plugins/builders/amazon/ebs
