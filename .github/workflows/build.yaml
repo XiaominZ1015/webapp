@@ -37,8 +37,8 @@ jobs:
       # build artifact
       - name: build packer 
         run: |
-          packer init ami.pkr.hcl --var access_key=${{ secrets.ACCESS_KEY }} secret_key=${{ secrets.SECRET_KEY }}
-          packer build ami.pkr.hcl
+          packer init ami.pkr.hcl 
+          packer build --var access_key=${{ secrets.ACCESS_KEY }} secret_key=${{ secrets.SECRET_KEY }} ami.pkr.hcl 
         env:
           PACKER_LOG: 1
           access_key: ${{ secrets.ACCESS_KEY }}
