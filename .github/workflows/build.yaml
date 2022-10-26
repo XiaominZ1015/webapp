@@ -34,16 +34,11 @@ jobs:
           arguments: -syntax-only
           target: ami.pkr.hcl
       
-      - name: Packer Init
-        run: packer init .
-      
       # build artifact
-      - name: Build Artifact
-        uses: hashicorp/packer-github-actions@master
-        with:
-          command: build
-          arguments: "-on-error=abort"
-          target: ami.pkr.hcl
+      - name: build packer 
+        run: |
+          packer init ami.pkr.hcl
+          packer build ami.pkr.hcl
         env:
           PACKER_LOG: 1
           ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
