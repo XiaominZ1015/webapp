@@ -34,6 +34,9 @@ jobs:
           arguments: -syntax-only
           target: ami.pkr.hcl
       
+      - name: Packer Init
+        run: packer init .
+      
       # build artifact
       - name: Build Artifact
         uses: hashicorp/packer-github-actions@master
