@@ -26,7 +26,12 @@ jobs:
 
       - name: install packer
         run: sudo apt-get install packer
-
+      
+      - name: Fix Template
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: fix
+          
       - name: Validate Template
         uses: hashicorp/packer-github-actions@master
         with:
@@ -37,8 +42,7 @@ jobs:
       # build artifact
       - name: build packer 
         run: |
-          packer init ami.pkr.hcl
-          echo ${{ secrets.ACCESS_KEY }}
+          packer init ami.pkr.hcl --var access_key=${{ secrets.ACCESS_KEY }} secret_key=${{ secrets.SECRET_KEY }}
           packer build ami.pkr.hcl
         env:
           PACKER_LOG: 1
