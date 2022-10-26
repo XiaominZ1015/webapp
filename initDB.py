@@ -15,8 +15,8 @@ def initializeDB():
     cursor = db.cursor()
     cursor.execute("CREATE DATABASE users_db")
     #cursor.execute("SHOW DATABASES")
-    cursor.execute("CREATE USER 'apiuser'@'localhost' IDENTIFIED BY '123456'")
-    cursor.execute("GRANT ALL PRIVILEGES ON users_db.*  TO 'apiuser'@'localhost'")
+    cursor.execute("CREATE USER 'sherry'@'localhost' IDENTIFIED BY '123456'")
+    cursor.execute("GRANT ALL PRIVILEGES ON users_db.*  TO 'sherry'@'localhost'")
 
 
 initializeDB()

@@ -1,4 +1,4 @@
-name: build application
+name: build
 
 on:
   push:
@@ -11,27 +11,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Step 1      
       - uses: actions/checkout@v2
-      
-      # Step 8
+
       - name: zip project file
         run: |
           cd /home/runner/work/webapp
           zip -r webapp /home/runner/work/webapp
-      
-      # Step 9
+
       - name: Upload zip file artifact
         uses: actions/upload-artifact@v2
         with:
           name: webapp
           path: webapp.zip
-          
-      # Step 10
+
       - name: install packer
         run: sudo apt-get install packer
-      
-      # validate templates
+
       - name: Validate Template
         uses: hashicorp/packer-github-actions@master
         with:
@@ -40,9 +35,14 @@ jobs:
           target: ami.pkr.hcl
       
       # build artifact
-      - name: build packer 
-        run: |
-          packer init ami.pkr.hcl
-          packer build ami.pkr.hcl
-        env:
-          PACKER_LOG: 1
+      - name: Build Artifact
+          uses: hashicorp/packer-github-actions@master
+          with:
+            command: build
+            arguments: "-on-error=abort"
+            target: ami.pkr.hcl
+          env:
+            PACKER_LOG: 1
+            ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+            SECRET_KEY: ${{ secrets.SECRET_KEY }}
+
