@@ -93,7 +93,6 @@ build {
       "pip install wheel",
       "pip install fastapi",
       "pip install \"uvicorn[standard]\"",
-      "pip install -U 'jsonschema<4.0'",
       "pip install python-decouple",
       "pip install python-multipart",
       "pip install PyJWT",
@@ -101,7 +100,8 @@ build {
       "pip install bcrypt",
       "pip install mysqlclient",
       "pip install gunicorn",
-      "sudo python3 init_db.py",
+      "sudo python3 initDB.py",
+      
     ]
   }
 }
