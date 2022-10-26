@@ -63,8 +63,8 @@ source "amazon-ebs" "my-ami" {
 build {
   sources = ["source.amazon-ebs.my-ami"]
   provisioner "file" {
-    source = "/home/runner/work/webapp/webapp/api.zip"
-    destination = "/home/ubuntu/api.zip"
+    source = "/home/runner/work/webapp/webapp/webapp.zip"
+    destination = "/home/ubuntu/webapp.zip"
   }
   provisioner "shell" {
     environment_vars = [
@@ -77,6 +77,7 @@ build {
       "sudo apt-get install nginx -y",
       "sudo apt-get install unzip",
       "sudo apt-get clean",
+      "unzip webapp.zip",
     ]
   }
 }
