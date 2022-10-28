@@ -15,7 +15,7 @@ variable "ssh_username" {
 
 variable "subnet_id" {
   type    = string
-  default = "subnet-04c492fe09ecf469a"
+  default = "subnet-0d61e4b41a0c00a30"
 }
 
 variable "access_key" {
