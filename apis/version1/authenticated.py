@@ -2,8 +2,9 @@ from datetime import timedelta, datetime
 from typing import Union
 
 import bcrypt
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, HTTPBasic, HTTPBasicCredentials
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from starlette import status
@@ -27,6 +28,30 @@ def get_db():
         yield db
     finally:
         db.close()
+
+@router.post("/documents/")
+async def create_upload_file(file: bytes = File(None)):
+    return {
+      "doc_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+      "user_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+      "name": "string",
+      "date_created": "2016-08-29T09:12:33.001Z",
+      "s3_bucket_path": "string"
+    }
+
+@router.get("/documents/{doc_id}")
+async def get_upload_file(doc_id: str):
+    file = {}
+    return file
+
+@router.get("/documents/")
+async def get_upload_file_list():
+    file = {"crud.get_user()" : "111"}
+    return file
+
+@router.delete("/documents/{doc_id}", status_code=204)
+async def delete_upload_file(doc_id: str):
+    return
 
 def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
     to_encode = data.copy()
@@ -73,19 +98,19 @@ async def verifyToken(token: str = Depends(oauth2_scheme)):
     return username
 
 
-@router.put("/{accountId}", response_model=User)
+@router.put("/account/{accountId}", status_code=204)
 #def update_user_with_id(accountId: str, user: schemas.UserUpdate, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
 def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: HTTPBasicCredentials = Depends(security),
                         db: Session = Depends(get_db)):
     result = crud.get_user_by_id(db, id=accountId)
     if not result:
-        raise HTTPException(status_code=404, detail="user do not exist")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="user do not exist")
     #if result.username != username:
         #raise HTTPException(status_code=401, detail="invalid credentials for this operation")
     # alteration for basic auth
     if result.username != credentials.username:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="not allowed",
             headers={"WWW-Authenticate": "Basic"},
         )
@@ -103,20 +128,20 @@ def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: H
     result_converted = User(id=result.id, first_name=result.first_name,
             last_name=result.last_name, email=result.username,
             accountCreated=result.account_created, accountupdated=result.account_updated)
-    return result_converted
+    return
 
-@router.get("/{accountId}", response_model=User)
+@router.get("/account/{accountId}", response_model=User)
 #async def get_user(accountId: str, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
 async def get_user(accountId: str, credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
     result = crud.get_user_by_id(db, id=accountId)
     if not result:
-        raise HTTPException(status_code=404, detail="user do not exist")
+        raise HTTPException(status_code=403, detail="user do not exist")
     #if result.username != username:
         #raise HTTPException(status_code=401, detail="invalid credentials for this operation")
     #alteration for basic auth
     if result.username != credentials.username:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="not allowed",
             headers={"WWW-Authenticate": "Basic"},
         )
