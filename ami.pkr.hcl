@@ -15,12 +15,12 @@ variable "ssh_username" {
 
 variable "subnet_id" {
   type    = string
-  default = "subnet-0c4aa446f9ad985e1"
+  default = "subnet-04c492fe09ecf469a"
 }
 
 variable "access_key" {
   type    = string
-  default = "AKIATGZHMLGE4GB7ACMO"
+  default = ""
 }
 
 variable "secret_key" {
@@ -28,13 +28,21 @@ variable "secret_key" {
   default = "C9MA16LunY60CHlCkoLkPERikutw4L5zJCzQtjtG"
 }
 
+variable "aws_secret_key"{
+  default = env("secret_key")
+}
+
+variable "aws_access_key"{
+  default = env("access_key")
+}
+
 # https://www.packer.io/plugins/builders/amazon/ebs
 source "amazon-ebs" "my-ami" {
   region          = "${var.aws_region}"
   ami_name        = "csye6225_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   ami_description = "AMI for CSYE 6225"
-  access_key      = var.access_key
-  secret_key      = var.secret_key
+  access_key      = var.aws_access_key
+  secret_key      = var.aws_secret_key
   ssh_agent_auth  = false
   ami_regions = [
     "us-east-1",
@@ -45,7 +53,6 @@ source "amazon-ebs" "my-ami" {
     delay_seconds = 120
     max_attempts  = 50
   }
-
 
   instance_type               = "t2.micro"
   source_ami                  = "${var.source_ami}"
