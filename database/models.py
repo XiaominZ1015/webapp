@@ -15,3 +15,11 @@ class User(Base):
     account_created = Column(String(256))
     account_updated = Column(String(256))
 
+class Document(Base):
+    __tablename__ = "documents"
+
+    doc_id = Column(String(256), primary_key=True, index=True)
+    name = Column(String(256))
+    user_id = Column(String(256))
+    data_created = Column(String(256))
+    s3_bucket_path = Column(String(256))
