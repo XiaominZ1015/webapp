@@ -2,16 +2,15 @@ from datetime import timedelta, datetime
 from typing import Union
 
 import bcrypt
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, File, Header
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, HTTPBasic, HTTPBasicCredentials
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from starlette import status
 
-from database import schemas, models, crud
+from database import schemas, models, crud, doc_crud
 from database.db import engine, SessionLocal
-from database.schemas import User, Token
+from database.schemas import User, Token, DocData, DocMetaData
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -30,27 +29,27 @@ def get_db():
         db.close()
 
 @router.post("/documents/")
-async def create_upload_file(file: bytes = File(None)):
-    return {
-      "doc_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
-      "user_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
-      "name": "string",
-      "date_created": "2016-08-29T09:12:33.001Z",
-      "s3_bucket_path": "string"
-    }
+async def create_upload_file(filetype: Union[str, None] = Header(default=None), file: bytes = File(None),
+                    credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
+    metadata = DocMetaData(doc_id="gu8f6_fvb78_009", user_id="dfghj1fwgwrg562563", name="filetype", s3_bucket_path="gtvbn/fgh/dd/")
+    return doc_crud.upload_doc(db, metadata)
 
 @router.get("/documents/{doc_id}")
-async def get_upload_file(doc_id: str):
-    file = {}
+async def get_upload_file(doc_id: str, credentials: HTTPBasicCredentials = Depends(security),
+                        db: Session = Depends(get_db)):
+    file = doc_crud.get_doc_by_id(db, doc_id=doc_id)
     return file
 
 @router.get("/documents/")
-async def get_upload_file_list():
-    file = {"crud.get_user()" : "111"}
+async def get_upload_files_list(credentials: HTTPBasicCredentials = Depends(security),
+                        db: Session = Depends(get_db)):
+    file = doc_crud.get_docs(db)
     return file
 
 @router.delete("/documents/{doc_id}", status_code=204)
-async def delete_upload_file(doc_id: str):
+async def delete_upload_file(doc_id: str, credentials: HTTPBasicCredentials = Depends(security),
+                        db: Session = Depends(get_db)):
+    doc_crud.delete_doc(db, doc_id=doc_id)
     return
 
 def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
@@ -124,10 +123,7 @@ def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: H
             headers={"WWW-Authenticate": "Basic"},
         )
     #end of basic auth alteration
-    result = crud.update_user(db=db, user=user, accountId=accountId)
-    result_converted = User(id=result.id, first_name=result.first_name,
-            last_name=result.last_name, email=result.username,
-            accountCreated=result.account_created, accountupdated=result.account_updated)
+    crud.update_user(db=db, user=user, accountId=accountId)
     return
 
 @router.get("/account/{accountId}", response_model=User)
@@ -156,6 +152,6 @@ async def get_user(accountId: str, credentials: HTTPBasicCredentials = Depends(s
         )
     #end of basic auth alteration
     result_converted = User(id=result.id, first_name=result.first_name,
-                            last_name=result.last_name, email=result.username,
+                            last_name=result.last_name, username=result.username,
                             accountCreated=result.account_created, accountupdated=result.account_updated)
     return result_converted

@@ -9,7 +9,7 @@ class UserBase(BaseModel):
     last_name: str
 
 class UserCreate(UserBase):
-    email: str
+    username: str
     password: str
 
 class UserUpdate(BaseModel):
@@ -19,7 +19,7 @@ class UserUpdate(BaseModel):
 
 class User(UserBase):
     id: int
-    email: str
+    username: str
     accountCreated: str
     accountupdated: str
 
@@ -29,3 +29,16 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Union[str, None] = None
+
+class DocData(BaseModel):
+    doc_id: str
+    user_id: str
+    name: str
+    data_created: str
+    s3_bucket_path: str
+
+class DocMetaData(BaseModel):
+    doc_id: str
+    user_id: str
+    name: str
+    s3_bucket_path: str
