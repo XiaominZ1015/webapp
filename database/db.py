@@ -1,7 +1,15 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+#db = os.getenv('db')
+#user = os.getenv('user')
+#password = os.getenv('password')
+#SQLALCHEMY_DATABASE_URL = db + "://" + user + ":" + password + "@127.0.0.1/users_db"
 SQLALCHEMY_DATABASE_URL = "mysql://sherry:123456@127.0.0.1/users_db"
 # SQLALCHEMY_DATABASE_URL = "postgresql://webapp:zxm123456@127.0.0.1/users_db"
 
