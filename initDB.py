@@ -1,7 +1,10 @@
+import sys
+
 import mysql.connector
 
 
-def initializeDB():
+def initializeDB(name: str):
+    print(name)
     file1 = open('/etc/mysql/debian.cnf', 'r')
     file1.readline()
     file1.readline()
@@ -18,5 +21,5 @@ def initializeDB():
     cursor.execute("CREATE USER 'sherry'@'localhost' IDENTIFIED BY '123456'")
     cursor.execute("GRANT ALL PRIVILEGES ON users_db.*  TO 'sherry'@'localhost'")
 
-
-initializeDB()
+if __name__ == "__main__":
+    initializeDB(sys.argv[1:])
