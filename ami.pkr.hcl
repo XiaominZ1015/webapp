@@ -79,6 +79,7 @@ build {
       "CHECKPOINT_DISABLE=1"
     ]
     inline = [
+      "sudo apt --fix-broken install",
       "sudo apt-get update",
       "sudo apt-get upgrade -y",
       "sudo apt-get install nginx -y",
