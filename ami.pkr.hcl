@@ -89,8 +89,6 @@ build {
       "sudo apt-get install python3-dev default-libmysqlclient-dev build-essential -y",
       "sudo apt-get install python3-mysql.connector -y",
       "sudo apt-get install python3-mysqldb -y",
-      "sudo apt-get install mysql-server -y",
-      "sudo systemctl start mysql.service",
       "sudo apt-get clean",
       "unzip webapp.zip",
       "sleep 100",
@@ -109,10 +107,7 @@ build {
       "pip install gunicorn",
       "pip install social-auth-core",
       "pip install python-jose",
-      "sudo python3 initDB.py",
       "sudo cp webapp.service /etc/systemd/system/",
-      "sudo systemctl start webapp",
-      "sudo systemctl enable webapp",
     ]
   }
 }
