@@ -67,7 +67,7 @@ async def create_upload_file(file: UploadFile=File(...),
     temp_file.write(contents)
     temp_file.seek(0)
     s3_client = boto3.client("s3")
-    s3_client.upload_fileobj(temp_file, "local", file.filename)
+    s3_client.upload_fileobj(temp_file, bucketName, file.filename)
     temp_file.close()
     return doc_crud.upload_doc(db, metadata)
 
