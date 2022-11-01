@@ -140,9 +140,9 @@ async def delete_upload_file(doc_id: str, credentials: HTTPBasicCredentials = De
         )
     userID = result.id
     # delete s3
-    s3_client = boto3.client("s3")
-    s3_client.delete_object(Bucket=get_bucket_name(),Key=doc_id)
     doc_crud.delete_doc(db, doc_id=doc_id, user_id=userID)
+    s3_client = boto3.client("s3")
+    s3_client.delete_object(Bucket=get_bucket_name(), Key=doc_id)
     return
 
 def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
