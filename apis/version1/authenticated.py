@@ -1,8 +1,9 @@
+import os
 from datetime import timedelta, datetime
 from typing import Union
 
 import bcrypt
-from fastapi import APIRouter, Depends, HTTPException, File, Header
+from fastapi import APIRouter, Depends, HTTPException, File, Header, UploadFile
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, HTTPBasic, HTTPBasicCredentials
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
@@ -28,28 +29,108 @@ def get_db():
     finally:
         db.close()
 
+def get_bucket_name():
+    #bucketName = "arn:aws:s3:::w22eff-s3bucketid-1oxi8xld06qfs"
+    bucketName = os.getenv('bucketName')
+    bucketName = bucketName[13:]
+    return bucketName
+
 @router.post("/documents/")
-async def create_upload_file(filetype: Union[str, None] = Header(default=None), file: bytes = File(None),
+async def create_upload_file(file: UploadFile=File(...),
                     credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
-    metadata = DocMetaData(doc_id="gu8f6_fvb78_009", user_id="dfghj1fwgwrg562563", name="filetype", s3_bucket_path="gtvbn/fgh/dd/")
+    bucketName = get_bucket_name()
+    result = crud.get_user_by_email(db, email=credentials.username)
+    if not result:
+        raise HTTPException(status_code=403, detail="user do not exist")
+    if result.username != credentials.username:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not allowed",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    current_password_bytes = bytes(credentials.password, "utf8")
+    password_bytes = bytes(result.password, "utf8")
+    if not bcrypt.checkpw(current_password_bytes, password_bytes):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    userID = result.id;
+    docID = file.filename+"__"+str(userID)
+    metadata = DocMetaData(doc_id=docID, user_id=userID, name=file.filename, s3_bucket_path=bucketName)
     return doc_crud.upload_doc(db, metadata)
 
 @router.get("/documents/{doc_id}")
 async def get_upload_file(doc_id: str, credentials: HTTPBasicCredentials = Depends(security),
                         db: Session = Depends(get_db)):
-    file = doc_crud.get_doc_by_id(db, doc_id=doc_id)
+    result = crud.get_user_by_email(db, email=credentials.username)
+    if not result:
+        raise HTTPException(status_code=403, detail="user do not exist")
+    if result.username != credentials.username:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not allowed",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    current_password_bytes = bytes(credentials.password, "utf8")
+    password_bytes = bytes(result.password, "utf8")
+    if not bcrypt.checkpw(current_password_bytes, password_bytes):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    userID = result.id
+    file = doc_crud.get_doc_by_id(db, doc_id=doc_id, user_id=userID)
     return file
 
 @router.get("/documents/")
 async def get_upload_files_list(credentials: HTTPBasicCredentials = Depends(security),
                         db: Session = Depends(get_db)):
-    file = doc_crud.get_docs(db)
-    return file
+    result = crud.get_user_by_email(db, email=credentials.username)
+    if not result:
+        raise HTTPException(status_code=403, detail="user do not exist")
+    if result.username != credentials.username:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not allowed",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    current_password_bytes = bytes(credentials.password, "utf8")
+    password_bytes = bytes(result.password, "utf8")
+    if not bcrypt.checkpw(current_password_bytes, password_bytes):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    userID = result.id
+    files = doc_crud.get_docs(db, user_id=userID)
+    return files
 
 @router.delete("/documents/{doc_id}", status_code=204)
 async def delete_upload_file(doc_id: str, credentials: HTTPBasicCredentials = Depends(security),
                         db: Session = Depends(get_db)):
-    doc_crud.delete_doc(db, doc_id=doc_id)
+    result = crud.get_user_by_email(db, email=credentials.username)
+    if not result:
+        raise HTTPException(status_code=403, detail="user do not exist")
+    if result.username != credentials.username:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not allowed",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    current_password_bytes = bytes(credentials.password, "utf8")
+    password_bytes = bytes(result.password, "utf8")
+    if not bcrypt.checkpw(current_password_bytes, password_bytes):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    userID = result.id
+    doc_crud.delete_doc(db, doc_id=doc_id, user_id=userID)
     return
 
 def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
