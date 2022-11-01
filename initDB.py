@@ -4,7 +4,7 @@ import mysql.connector
 
 
 def initializeDB():
-    db = mysql.connector.connect(host=sys.argv[1], user="csye6225", password="Maxim123456")
+    db = mysql.connector.connect(host=sys.argv[1], user="csye6225", password="password")
     cursor = db.cursor()
     cursor.execute("CREATE DATABASE users_db")
     #cursor.execute("SHOW DATABASES")
