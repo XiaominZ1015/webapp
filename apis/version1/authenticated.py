@@ -11,7 +11,6 @@ from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from starlette import status
 
-from apis.connect import upload_file_using_resource
 from database import schemas, models, crud, doc_crud
 from database.db import engine, SessionLocal
 from database.schemas import User, Token, DocData, DocMetaData
@@ -67,7 +66,7 @@ async def create_upload_file(file: UploadFile=File(...),
     temp_file.write(contents)
     temp_file.seek(0)
     s3_client = boto3.client("s3")
-    s3_client.upload_fileobj(temp_file, bucketName, file.filename)
+    s3_client.upload_fileobj(temp_file, bucketName, docID)
     temp_file.close()
     return doc_crud.upload_doc(db, metadata)
 
@@ -140,7 +139,10 @@ async def delete_upload_file(doc_id: str, credentials: HTTPBasicCredentials = De
             headers={"WWW-Authenticate": "Basic"},
         )
     userID = result.id
+    # delete s3
     doc_crud.delete_doc(db, doc_id=doc_id, user_id=userID)
+    s3_client = boto3.client("s3")
+    s3_client.delete_object(Bucket=get_bucket_name(), Key=doc_id)
     return
 
 def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
