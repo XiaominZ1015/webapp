@@ -108,6 +108,7 @@ build {
       "pip install gunicorn",
       "pip install social-auth-core",
       "pip install python-jose",
+      "pip install boto3",
       "sudo cp webapp.service /etc/systemd/system/",
     ]
   }

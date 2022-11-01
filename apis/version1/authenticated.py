@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from starlette import status
 
+from apis.connect import upload_file_using_resource
 from database import schemas, models, crud, doc_crud
 from database.db import engine, SessionLocal
 from database.schemas import User, Token, DocData, DocMetaData
@@ -30,7 +31,6 @@ def get_db():
         db.close()
 
 def get_bucket_name():
-    #bucketName = "arn:aws:s3:::w22eff-s3bucketid-1oxi8xld06qfs"
     bucketName = os.getenv('bucketName')
     bucketName = bucketName[13:]
     return bucketName
@@ -59,6 +59,7 @@ async def create_upload_file(file: UploadFile=File(...),
     userID = result.id;
     docID = file.filename+"__"+str(userID)
     metadata = DocMetaData(doc_id=docID, user_id=userID, name=file.filename, s3_bucket_path=bucketName)
+    upload_file_using_resource(docID)
     return doc_crud.upload_doc(db, metadata)
 
 @router.get("/documents/{doc_id}")
