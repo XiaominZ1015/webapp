@@ -1,8 +1,10 @@
+import io
 import os
 from datetime import timedelta, datetime
 from typing import Union
 
 import bcrypt
+import boto3
 from fastapi import APIRouter, Depends, HTTPException, File, Header, UploadFile
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, HTTPBasic, HTTPBasicCredentials
 from sqlalchemy.orm import Session
@@ -59,7 +61,14 @@ async def create_upload_file(file: UploadFile=File(...),
     userID = result.id;
     docID = file.filename+"__"+str(userID)
     metadata = DocMetaData(doc_id=docID, user_id=userID, name=file.filename, s3_bucket_path=bucketName)
-    upload_file_using_resource(docID)
+    #upload to s3
+    contents = file.file.read()
+    temp_file = io.BytesIO()
+    temp_file.write(contents)
+    temp_file.seek(0)
+    s3_client = boto3.client("s3")
+    s3_client.upload_fileobj(temp_file, "local", file.filename)
+    temp_file.close()
     return doc_crud.upload_doc(db, metadata)
 
 @router.get("/documents/{doc_id}")
