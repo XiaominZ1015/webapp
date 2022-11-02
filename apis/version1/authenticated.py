@@ -65,11 +65,8 @@ async def create_upload_file(file: UploadFile=File(...),
     temp_file = io.BytesIO()
     temp_file.write(contents)
     temp_file.seek(0)
-    #s3_client = boto3.client("s3")
-    #s3_client.upload_fileobj(temp_file, bucketName, docID)
-    s3 = boto3.resource("s3")
-    bucket = s3.Bucket(bucketName)
-    bucket.put_object(Body=temp_file, Key=docID, BucketKeyEnabled=true)
+    s3_client = boto3.client("s3")
+    s3_client.upload_fileobj(temp_file, bucketName, docID)
     temp_file.close()
     return doc_crud.upload_doc(db, metadata)
 
