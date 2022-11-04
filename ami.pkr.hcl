@@ -25,7 +25,7 @@ variable "access_key" {
 
 variable "secret_key" {
   type    = string
-  default = "C9MA16LunY60CHlCkoLkPERikutw4L5zJCzQtjtG"
+  default = ""
 }
 
 variable "aws_secret_key"{
