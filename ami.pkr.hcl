@@ -84,7 +84,7 @@ build {
       "sudo apt-get upgrade -y",
       "sudo apt-get install nginx -y",
       "sudo apt install wget",
-      "sudo wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb",
+      "sudo wget https://s3.us-east-1.amazonaws.com/amazoncloudwatch-agent-us-east-1/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb",
       "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb",
       "sudo apt-get install unzip",
       "sudo apt-get install python3 -y",
