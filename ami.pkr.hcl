@@ -73,6 +73,10 @@ build {
     source      = "/home/runner/work/webapp/webapp.zip"
     destination = "/home/ubuntu/webapp.zip"
   }
+  provisioner "file" {
+    source      = "/home/runner/work/webapp/cloudwatch-config.json"
+    destination = "/home/ubuntu/cloudwatch-config.json"
+  }
   provisioner "shell" {
     environment_vars = [
       "DEBIAN_FRONTEND=noninteractive",
@@ -113,7 +117,9 @@ build {
       "pip install social-auth-core",
       "pip install python-jose",
       "pip install boto3",
+      "sudo cp /home/ubuntu/cloudwatch-config.json /opt/cloudwatch-config.json",
       "sudo cp webapp.service /etc/systemd/system/",
+      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/cloudwatch-config.json -s",
     ]
   }
 }
