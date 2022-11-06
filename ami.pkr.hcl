@@ -82,7 +82,7 @@ build {
       "sudo apt --fix-broken install",
       "sudo apt update --fix-missing",
       "sudo apt-get upgrade -y",
-      "sudo apt-get install -f"
+      "sudo apt-get install -f",
       "sudo apt-get install nginx -y",
       "sudo apt install wget",
       "sudo wget https://s3.us-east-1.amazonaws.com/amazoncloudwatch-agent-us-east-1/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
