@@ -2,7 +2,7 @@ import io
 import os
 from datetime import timedelta, datetime
 from typing import Union
-
+import statsd
 import bcrypt
 import boto3
 from fastapi import APIRouter, Depends, HTTPException, File, Header, UploadFile
@@ -16,6 +16,7 @@ from database.db import engine, SessionLocal
 from database.schemas import User, Token, DocData, DocMetaData
 
 models.Base.metadata.create_all(bind=engine)
+c = statsd.StatsClient('localhost',8125)
 
 router = APIRouter()
 security = HTTPBasic()
@@ -39,6 +40,7 @@ def get_bucket_name():
 @router.post("/documents/")
 async def create_upload_file(file: UploadFile=File(...),
                     credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
+    c.incr('upload doc')
     bucketName = get_bucket_name()
     result = crud.get_user_by_email(db, email=credentials.username)
     if not result:
@@ -222,6 +224,7 @@ def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: H
 @router.get("/account/{accountId}", response_model=User)
 #async def get_user(accountId: str, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
 async def get_user(accountId: str, credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
+    c.incr('get user info')
     result = crud.get_user_by_id(db, id=accountId)
     if not result:
         raise HTTPException(status_code=403, detail="user do not exist")
