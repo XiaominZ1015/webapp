@@ -2,7 +2,7 @@ import io
 import os
 from datetime import timedelta, datetime
 from typing import Union
-import statsd
+from statsd.defaults.env import statsd
 import bcrypt
 import boto3
 from fastapi import APIRouter, Depends, HTTPException, File, Header, UploadFile
@@ -14,7 +14,7 @@ from starlette import status
 from database import schemas, models, crud, doc_crud
 from database.db import engine, SessionLocal
 from database.schemas import User, Token, DocData, DocMetaData
-from statsd.defaults.django import statsd
+
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -225,7 +225,7 @@ def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: H
 @router.get("/account/{accountId}", response_model=User)
 #async def get_user(accountId: str, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
 async def get_user(accountId: str, credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
-    statsd.incr(’get_account’)
+    statsd.incr("get_account")
     result = crud.get_user_by_id(db, id=accountId)
     if not result:
         raise HTTPException(status_code=403, detail="user do not exist")
