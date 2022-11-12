@@ -1,16 +1,10 @@
-from fastapi import APIRouter
 
+from fastapi import APIRouter
+from statsd.defaults.env import statsd
 
 router = APIRouter()
-connection = statsd.Connection(
-       host='127.0.0.1',
-       port=8125,
-       sample_rate=1,
-   )
-client = statsd.Client("python", connection)
-counter = client.get_counter("counter")
 
 @router.get("/")
 def hello():
-    counter += 1
+    statsd.incr("sss")
     return {"message": "Hello World"}
