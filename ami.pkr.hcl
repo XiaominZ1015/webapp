@@ -114,6 +114,7 @@ build {
       "pip install python-jose",
       "pip install boto3",
       "pip install statsd",
+      "pip install logging",
       "sudo cp /home/ubuntu/home/runner/work/webapp/webapp/cloudwatch-config.json /opt/cloudwatch-config.json",
       "sudo cp webapp.service /etc/systemd/system/",
       "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/cloudwatch-config.json -s",
