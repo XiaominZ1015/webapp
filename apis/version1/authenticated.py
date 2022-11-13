@@ -1,8 +1,9 @@
 import io
+import logging
 import os
 from datetime import timedelta, datetime
 from typing import Union
-from statsd.defaults.env import statsd
+import statsd
 import bcrypt
 import boto3
 from fastapi import APIRouter, Depends, HTTPException, File, Header, UploadFile
@@ -25,7 +26,9 @@ SECRET_KEY = "b999f667097d4aaea7fa07d23b4cd8e97d24ae3fe3e0378c4cf063cc50d64121"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
+statsd = statsd.StatsClient(host='127.0.0.1',
+                     port=8125,
+                     prefix="public")
 def get_db():
     db = SessionLocal()
     try:
@@ -41,7 +44,10 @@ def get_bucket_name():
 @router.post("/documents/")
 async def create_upload_file(file: UploadFile=File(...),
                     credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
-
+    statsd.incr('post_doc')
+    logging.info("user posting a document")
+    foo_timer = statsd.timer('post_doc_timer')
+    foo_timer.start()
     bucketName = get_bucket_name()
     result = crud.get_user_by_email(db, email=credentials.username)
     if not result:
@@ -71,11 +77,16 @@ async def create_upload_file(file: UploadFile=File(...),
     s3_client = boto3.client("s3")
     s3_client.upload_fileobj(temp_file, bucketName, docID)
     temp_file.close()
+    foo_timer.stop()
     return doc_crud.upload_doc(db, metadata)
 
 @router.get("/documents/{doc_id}")
 async def get_upload_file(doc_id: str, credentials: HTTPBasicCredentials = Depends(security),
                         db: Session = Depends(get_db)):
+    statsd.incr('get_doc')
+    logging.info("user try to get a document")
+    foo_timer = statsd.timer('get_doc_timer')
+    foo_timer.start()
     result = crud.get_user_by_email(db, email=credentials.username)
     if not result:
         raise HTTPException(status_code=403, detail="user do not exist")
@@ -95,11 +106,16 @@ async def get_upload_file(doc_id: str, credentials: HTTPBasicCredentials = Depen
         )
     userID = result.id
     file = doc_crud.get_doc_by_id(db, doc_id=doc_id, user_id=userID)
+    foo_timer.stop()
     return file
 
 @router.get("/documents/")
 async def get_upload_files_list(credentials: HTTPBasicCredentials = Depends(security),
                         db: Session = Depends(get_db)):
+    statsd.incr('get_doc_list')
+    logging.info("user try to get a list documents")
+    foo_timer = statsd.timer('get_doc_list_timer')
+    foo_timer.start()
     result = crud.get_user_by_email(db, email=credentials.username)
     if not result:
         raise HTTPException(status_code=403, detail="user do not exist")
@@ -119,11 +135,16 @@ async def get_upload_files_list(credentials: HTTPBasicCredentials = Depends(secu
         )
     userID = result.id
     files = doc_crud.get_docs(db, user_id=userID)
+    foo_timer.stop()
     return files
 
 @router.delete("/documents/{doc_id}", status_code=204)
 async def delete_upload_file(doc_id: str, credentials: HTTPBasicCredentials = Depends(security),
                         db: Session = Depends(get_db)):
+    statsd.incr('delete_doc')
+    logging.info("user try to delete a document")
+    foo_timer = statsd.timer('delete_doc_timer')
+    foo_timer.start()
     result = crud.get_user_by_email(db, email=credentials.username)
     if not result:
         raise HTTPException(status_code=403, detail="user do not exist")
@@ -146,6 +167,7 @@ async def delete_upload_file(doc_id: str, credentials: HTTPBasicCredentials = De
     doc_crud.delete_doc(db, doc_id=doc_id, user_id=userID)
     s3_client = boto3.client("s3")
     s3_client.delete_object(Bucket=get_bucket_name(), Key=doc_id)
+    foo_timer.stop()
     return
 
 def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
@@ -197,6 +219,10 @@ async def verifyToken(token: str = Depends(oauth2_scheme)):
 #def update_user_with_id(accountId: str, user: schemas.UserUpdate, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
 def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: HTTPBasicCredentials = Depends(security),
                         db: Session = Depends(get_db)):
+    statsd.incr('update_account')
+    logging.info("user try to update account")
+    foo_timer = statsd.timer('update_account_timer')
+    foo_timer.start()
     result = crud.get_user_by_id(db, id=accountId)
     if not result:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="user do not exist")
@@ -220,12 +246,16 @@ def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: H
         )
     #end of basic auth alteration
     crud.update_user(db=db, user=user, accountId=accountId)
+    foo_timer.stop()
     return
 
 @router.get("/account/{accountId}", response_model=User)
 #async def get_user(accountId: str, username: str = Depends(verifyToken), db: Session = Depends(get_db)):
 async def get_user(accountId: str, credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
-    statsd.incr("get_account")
+    statsd.incr('get_account')
+    logging.info("user try to get account info")
+    foo_timer = statsd.timer('get_account_timer')
+    foo_timer.start()
     result = crud.get_user_by_id(db, id=accountId)
     if not result:
         raise HTTPException(status_code=403, detail="user do not exist")
@@ -251,4 +281,5 @@ async def get_user(accountId: str, credentials: HTTPBasicCredentials = Depends(s
     result_converted = User(id=result.id, first_name=result.first_name,
                             last_name=result.last_name, username=result.username,
                             accountCreated=result.account_created, accountupdated=result.account_updated)
+    foo_timer.stop()
     return result_converted

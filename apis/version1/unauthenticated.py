@@ -1,10 +1,11 @@
-
 from fastapi import APIRouter
-from statsd.defaults.env import statsd
-
+import statsd
 router = APIRouter()
+statsd = statsd.StatsClient(host='127.0.0.1',
+                     port=8125,
+                     prefix="unauthenticated")
 
 @router.get("/")
 def hello():
-    statsd.incr("sss")
+    statsd.incr('hello')
     return {"message": "Hello World"}
