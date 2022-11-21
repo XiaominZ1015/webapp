@@ -1,3 +1,4 @@
+import json
 import os
 import time
 import boto3
@@ -6,9 +7,13 @@ from jose import jwt
 from sqlalchemy.orm import Session
 import logging
 import statsd
+from starlette import status
+
 from database import schemas, models, crud
 from database.db import engine, SessionLocal
 from database.schemas import User
+from boto3.dynamodb.conditions import Key
+
 models.Base.metadata.create_all(bind=engine)
 
 router = APIRouter()
@@ -60,10 +65,31 @@ def create_account(user: schemas.UserCreate, db: Session = Depends(get_db)):
         TopicArn=topic_arn,
         Message=message,
     )['MessageId']
-    # add into DynamoDB table
+    # insert into DynamoDB table
     dynamodb = boto3.client('dynamodb')
-    json = create_onetime_token(result.username)
-    dynamodb.Table('token').put_item(
-        Item=json
+    token = create_onetime_token(result.username)
+    dynamodb.Table('csye6225').put_item(
+        Item={
+            "email": {"S": result.username},
+            "token": {"S": token}}
     )
     return result_converted
+
+@router.post("/verifyUserEmail/{email}{token}", status_code=204)
+def verify_email(email: str, token: str, db: Session = Depends(get_db)):
+    dynamodb = boto3.client('dynamodb')
+    response = dynamodb.Table('csye6225').query(
+        KeyConditionExpression=Key('email').eq(email)
+    )
+    if(response.token == token):
+        db_user = crud.get_user_by_email(db, email=email)
+        json_raw = '{"verify": 1}'
+        user_dict = json.loads(json_raw)
+        user = schemas.UserUpdate(**user_dict)
+        crud.update_user(db=db, user=user, accountId=db_user.id)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="invaild token",
+            headers={"WWW-Authenticate": "Basic"},
+        )
