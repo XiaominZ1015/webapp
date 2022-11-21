@@ -14,6 +14,7 @@ class User(Base):
     password = Column(String(256))
     account_created = Column(String(256))
     account_updated = Column(String(256))
+    verify = Column(Integer)
 
 class Document(Base):
     __tablename__ = "documents"

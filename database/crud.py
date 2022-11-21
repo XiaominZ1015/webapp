@@ -34,7 +34,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(
         first_name=user.first_name, last_name=user.last_name,
         username=user.username, password=password_str,
-        account_created=datetime.now(), account_updated=datetime.now(),
+        account_created=datetime.now(), account_updated=datetime.now(), verify=0
         )
     db.add(db_user)
     db.commit()
