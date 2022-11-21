@@ -16,6 +16,7 @@ class UserUpdate(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
     password: Optional[str]
+    verify: Optional[int]
 
 class User(UserBase):
     id: int
