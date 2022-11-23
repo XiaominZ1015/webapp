@@ -58,6 +58,12 @@ async def create_upload_file(file: UploadFile=File(...),
             detail="not allowed",
             headers={"WWW-Authenticate": "Basic"},
         )
+    if result.verify != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not verified",
+            headers={"WWW-Authenticate": "Basic"},
+        )
     current_password_bytes = bytes(credentials.password, "utf8")
     password_bytes = bytes(result.password, "utf8")
     if not bcrypt.checkpw(current_password_bytes, password_bytes):
@@ -96,6 +102,12 @@ async def get_upload_file(doc_id: str, credentials: HTTPBasicCredentials = Depen
             detail="not allowed",
             headers={"WWW-Authenticate": "Basic"},
         )
+    if result.verify != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not verified",
+            headers={"WWW-Authenticate": "Basic"},
+        )
     current_password_bytes = bytes(credentials.password, "utf8")
     password_bytes = bytes(result.password, "utf8")
     if not bcrypt.checkpw(current_password_bytes, password_bytes):
@@ -125,6 +137,12 @@ async def get_upload_files_list(credentials: HTTPBasicCredentials = Depends(secu
             detail="not allowed",
             headers={"WWW-Authenticate": "Basic"},
         )
+    if result.verify != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not verified",
+            headers={"WWW-Authenticate": "Basic"},
+        )
     current_password_bytes = bytes(credentials.password, "utf8")
     password_bytes = bytes(result.password, "utf8")
     if not bcrypt.checkpw(current_password_bytes, password_bytes):
@@ -152,6 +170,12 @@ async def delete_upload_file(doc_id: str, credentials: HTTPBasicCredentials = De
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="not allowed",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    if result.verify != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not verified",
             headers={"WWW-Authenticate": "Basic"},
         )
     current_password_bytes = bytes(credentials.password, "utf8")
@@ -235,6 +259,12 @@ def update_user_with_id(accountId: str, user: schemas.UserUpdate, credentials: H
             detail="not allowed",
             headers={"WWW-Authenticate": "Basic"},
         )
+    if result.verify != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not verified",
+            headers={"WWW-Authenticate": "Basic"},
+        )
     current_password_bytes = bytes(credentials.password, "utf8")
     password_bytes = bytes(result.password,"utf8")
     #password_temp = b'$2b$12$TEGPvzrARipeNtouRf2Usu6mqwRySWX9dme89Dw3YkcbwHKuOjmpu'
@@ -266,6 +296,12 @@ async def get_user(accountId: str, credentials: HTTPBasicCredentials = Depends(s
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="not allowed",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    if result.verify != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not verified",
             headers={"WWW-Authenticate": "Basic"},
         )
     current_password_bytes = bytes(credentials.password, "utf8")

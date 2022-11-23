@@ -57,35 +57,45 @@ def create_account(user: schemas.UserCreate, db: Session = Depends(get_db)):
     result_converted = User(id=result.id, first_name=result.first_name,
             last_name=result.last_name, username=result.username,
             accountCreated=result.account_created, accountupdated=result.account_updated)
-    #publish message
-    sns_client = boto3.client("sns", regin_name="us-east-1")
-    topic_arn = get_sns_topic()
-    message = result.username
-    response = sns_client.publish(
-        TopicArn=topic_arn,
-        Message=message,
-    )['MessageId']
-    # insert into DynamoDB table
-    dynamodb = boto3.client('dynamodb')
+
     token = create_onetime_token(result.username)
+    # publish message
+    sns_client = boto3.client("sns", region_name="us-east-1")
+    SNSTopic = os.getenv('SNSTopic')
+    email = str(result.username)
+    url0 = ",http://prod.sherryzxm.com/v1/verifyUserEmail/"
+    url1 = url0 + email + "/"
+    url2 = url1 + str(token)
+    message = email + url2
+    response = sns_client.publish(
+        TopicArn=SNSTopic,
+        Message=message
+    )
+
+    # insert into DynamoDB table
+    dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
+
     dynamodb.Table('csye6225').put_item(
         Item={
-            "email": {"S": result.username},
-            "token": {"S": token}}
+            "email": result.username,
+            "token": token}
     )
+    foo_timer.stop()
     return result_converted
 
-@router.post("/verifyUserEmail/{email}{token}", status_code=204)
+@router.get("/v1/verifyUserEmail/{email}/{token}", status_code=204)
 def verify_email(email: str, token: str, db: Session = Depends(get_db)):
-    dynamodb = boto3.client('dynamodb')
-    response = dynamodb.Table('csye6225').query(
-        KeyConditionExpression=Key('email').eq(email)
+    dynamodb = boto3.resource('dynamodb', region_name="us-west-1")
+    response = dynamodb.Table('csye6225').get_item(
+        Key={'email': email}
     )
-    if(response.token == token):
+    item = response['Item']
+    if (item['token'] == token):
         db_user = crud.get_user_by_email(db, email=email)
-        json_raw = '{"verify": 1}'
-        user_dict = json.loads(json_raw)
-        user = schemas.UserUpdate(**user_dict)
+        user = schemas.UserUpdate(verify=1)
+        # json_raw = '{"verify": 1}'
+        # user_dict = json.loads(json_raw)
+        # user = schemas.UserBase(**user_dict)
         crud.update_user(db=db, user=user, accountId=db_user.id)
     else:
         raise HTTPException(
