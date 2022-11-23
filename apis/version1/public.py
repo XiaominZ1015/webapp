@@ -31,15 +31,12 @@ def get_db():
     finally:
         db.close()
 
-def get_sns_topic():
-    sns_topic = os.getenv('topic')
-    sns_topic = sns_topic[13:]
-    return sns_topic
-
-
 def create_onetime_token(email: str):
-    to_encode = email.copy()
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    payload = {
+      "email":""
+    }
+    payload["email"] = email
+    encoded_jwt = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 @router.post("/account", response_model=User)
@@ -61,7 +58,7 @@ def create_account(user: schemas.UserCreate, db: Session = Depends(get_db)):
     token = create_onetime_token(result.username)
     # publish message
     sns_client = boto3.client("sns", region_name="us-east-1")
-    SNSTopic = os.getenv('SNSTopic')
+    SNSTopic = os.getenv('topic')
     email = str(result.username)
     url0 = ",http://prod.sherryzxm.com/v1/verifyUserEmail/"
     url1 = url0 + email + "/"
@@ -83,9 +80,9 @@ def create_account(user: schemas.UserCreate, db: Session = Depends(get_db)):
     foo_timer.stop()
     return result_converted
 
-@router.get("/v1/verifyUserEmail/{email}/{token}", status_code=204)
+@router.get("/verifyUserEmail/{email}/{token}", status_code=204)
 def verify_email(email: str, token: str, db: Session = Depends(get_db)):
-    dynamodb = boto3.resource('dynamodb', region_name="us-west-1")
+    dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
     response = dynamodb.Table('csye6225').get_item(
         Key={'email': email}
     )
