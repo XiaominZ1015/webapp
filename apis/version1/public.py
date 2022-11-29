@@ -60,7 +60,7 @@ def create_account(user: schemas.UserCreate, db: Session = Depends(get_db)):
     sns_client = boto3.client("sns", region_name="us-east-1")
     SNSTopic = os.getenv('topic')
     email = str(result.username)
-    url0 = ",http://prod.sherryzxm.com/v1/verifyUserEmail/"
+    url0 = ",http://sherryzxm.com/v1/verifyUserEmail/"
     url1 = url0 + email + "/"
     url2 = url1 + str(token)
     message = email + url2
@@ -71,14 +71,17 @@ def create_account(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     # insert into DynamoDB table
     dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
-
+    ttl = int(time.time()) + 120
     dynamodb.Table('csye6225').put_item(
         Item={
             "email": result.username,
-            "token": token}
+            "token": token,
+            "ttl": ttl
+        }
     )
     foo_timer.stop()
     return result_converted
+
 
 @router.get("/verifyUserEmail/{email}/{token}", status_code=204)
 def verify_email(email: str, token: str, db: Session = Depends(get_db)):
@@ -87,13 +90,28 @@ def verify_email(email: str, token: str, db: Session = Depends(get_db)):
         Key={'email': email}
     )
     item = response['Item']
-    if (item['token'] == token):
+
+@router.get("/verifyUserEmail/{email}/{token}")
+def verify_email(email: str, token: str, db: Session = Depends(get_db)):
+    dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
+    response = dynamodb.Table('csye6225').get_item(
+        Key={'email': email}
+    )
+    item = response['Item']
+    if item['token'] == token and item['ttl'] > int(time.time()):
         db_user = crud.get_user_by_email(db, email=email)
         user = schemas.UserUpdate(verify=1)
         # json_raw = '{"verify": 1}'
         # user_dict = json.loads(json_raw)
         # user = schemas.UserBase(**user_dict)
         crud.update_user(db=db, user=user, accountId=db_user.id)
+        return {"message": "account verified"}
+    elif item['ttl'] <= int(time.time()):
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail="verify link expired",
+            headers={"WWW-Authenticate": "Basic"},
+        )
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
