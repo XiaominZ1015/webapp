@@ -82,15 +82,6 @@ def create_account(user: schemas.UserCreate, db: Session = Depends(get_db)):
     foo_timer.stop()
     return result_converted
 
-
-@router.get("/verifyUserEmail/{email}/{token}", status_code=204)
-def verify_email(email: str, token: str, db: Session = Depends(get_db)):
-    dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
-    response = dynamodb.Table('csye6225').get_item(
-        Key={'email': email}
-    )
-    item = response['Item']
-
 @router.get("/verifyUserEmail/{email}/{token}")
 def verify_email(email: str, token: str, db: Session = Depends(get_db)):
     dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
