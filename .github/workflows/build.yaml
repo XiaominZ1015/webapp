@@ -38,7 +38,7 @@ jobs:
       - name: build packer 
         run: |
           packer init ami.pkr.hcl 
-          packer build ami.pkr.hcl  
+          packer build ami.pkr.hcl  2>&1 | sudo tee /home/output.txt
         env:
           PACKER_LOG: 1
           access_key: ${{ secrets.ACCESS_KEY }}
