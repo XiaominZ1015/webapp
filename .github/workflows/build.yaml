@@ -43,4 +43,22 @@ jobs:
           PACKER_LOG: 1
           access_key: ${{ secrets.ACCESS_KEY }}
           secret_key: ${{ secrets.SECRET_KEY }}
+          
+      # configure aws credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.SECRET_KEY }}
+          aws-region: us-east-1
+
+      - name: autoscaling group refresh
+        id: deploy
+        run: |
+          export amiKey=$(cat /home/output.txt | grep 'us-east-1: '| tail -n1 | cut -c12-32)
+          echo $amiKey
+          aws ec2 create-launch-template-version --launch-template-name myec23-launch-template --source-version '$Latest' --launch-template-data "ImageId=$amiKey"
+          aws autoscaling update-auto-scaling-group --auto-scaling-group-name myec23-asg --launch-template LaunchTemplateName=myec23-launch-template,Version='$Latest' 
+          aws autoscaling start-instance-refresh --auto-scaling-group-name myec23-launch-template --strategy Rolling
+          
 
