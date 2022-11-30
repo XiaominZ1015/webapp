@@ -59,6 +59,6 @@ jobs:
           echo $amiKey
           aws ec2 create-launch-template-version --launch-template-name myec23-launch-template --source-version '$Latest' --launch-template-data "ImageId=$amiKey"
           aws autoscaling update-auto-scaling-group --auto-scaling-group-name myec23-asg --launch-template LaunchTemplateName=myec23-launch-template,Version='$Latest' 
-          aws autoscaling start-instance-refresh --auto-scaling-group-name myec23-launch-template --strategy Rolling
+          aws autoscaling start-instance-refresh --auto-scaling-group-name myec23-asg --strategy Rolling
           
 
