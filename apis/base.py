@@ -1,4 +1,4 @@
-from apis.version1 import unauthenticated, authenticated, public
+from .apis.version1 import unauthenticated, authenticated, public
 from fastapi import APIRouter
 
 
