@@ -5,7 +5,7 @@ statsd = statsd.StatsClient(host='127.0.0.1',
                      port=8125,
                      prefix="unauthenticated")
 
-@router.get("/", status_code=204)
+@router.get("/", status_code=200)
 def hello():
     statsd.incr('hello')
     return {"message": "Hello Change"}
