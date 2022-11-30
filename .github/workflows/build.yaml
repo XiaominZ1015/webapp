@@ -52,7 +52,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SECRET_KEY }}
           aws-region: us-east-1
 
-      - name: autoscaling group refresh
+      - name: template update and autoscaling group refresh
         id: deploy
         run: |
           export amiKey=$(cat /home/output.txt | grep 'us-east-1: '| tail -n1 | cut -c12-32)
