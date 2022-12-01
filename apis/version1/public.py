@@ -9,9 +9,9 @@ import logging
 import statsd
 from starlette import status
 
-from database import schemas, models, crud
-from database.db import engine, SessionLocal
-from database.schemas import User
+from ...database import schemas, models, crud
+from ...database.db import engine, SessionLocal
+from ...database.schemas import User
 from boto3.dynamodb.conditions import Key
 
 models.Base.metadata.create_all(bind=engine)
