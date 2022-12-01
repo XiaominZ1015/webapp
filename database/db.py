@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 ip = os.getenv('IP')
-if not ip:
+if ip:
     SQLALCHEMY_DATABASE_URL = "mysql://sherry:123456@" + ip + "/users_db"
     # SQLALCHEMY_DATABASE_URL = "mysql://sherry:123456@127.0.0.1/users_db"
     # SQLALCHEMY_DATABASE_URL = "postgresql://webapp:zxm123456@127.0.0.1/users_db"
