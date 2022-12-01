@@ -12,9 +12,9 @@ from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from starlette import status
 
-from ...database import schemas, models, crud, doc_crud
-from ...database.db import engine, SessionLocal
-from ...database.schemas import User, Token, DocData, DocMetaData
+from database import schemas, models, crud, doc_crud
+from database.db import engine, SessionLocal
+from database.schemas import User, Token, DocData, DocMetaData
 
 
 models.Base.metadata.create_all(bind=engine)
