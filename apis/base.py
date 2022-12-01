@@ -1,6 +1,7 @@
-from .version1 import unauthenticated, authenticated, public
+
 from fastapi import APIRouter
 
+from apis.version1 import public, unauthenticated, authenticated
 
 api_router = APIRouter()
 api_router.include_router(public.router, prefix="/v1", tags=["public"])
