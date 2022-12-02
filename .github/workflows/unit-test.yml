@@ -12,8 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
     steps:
       # Downloads a copy of the code in your repository before running CI tests
