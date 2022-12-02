@@ -6,6 +6,8 @@ name: application unit test
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 
 permissions:
