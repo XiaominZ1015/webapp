@@ -121,7 +121,7 @@ async def get_upload_file(doc_id: str, credentials: HTTPBasicCredentials = Depen
     foo_timer.stop()
     return file
 
-@router.get("/documents/")
+@router.get("/documents123/")
 async def get_upload_files_list(credentials: HTTPBasicCredentials = Depends(security),
                         db: Session = Depends(get_db)):
     statsd.incr('get_doc_list')
